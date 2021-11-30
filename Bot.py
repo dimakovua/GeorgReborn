@@ -24,12 +24,15 @@ def parseanek():
 		Print('Error')
 
 
-def get_html(url, params=None):
-    r = requests.get(url, headers=headers1, params=params)
-    r.encoding = 'utf-8'
-    return r
-
-
+def get_weather(city):
+	req = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=8915429fcf6a68275f7c20caab444827&units=metric&lang=RU"
+	res = requests.get(req)
+	data = res.json()
+	try:
+		answer = "В городе " + data['name'] + " сейчас " + str(data['main']['temp']) + " °С и " + data['weather'][0]['description']
+	except:
+		return "Дідько! Такого міста не існує, здається("
+	return answer
 def get_content(html):
     soup = BeautifulSoup(html, 'html.parser')
     items = soup.find('span').get_text()
@@ -56,6 +59,12 @@ headers1 = {'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Geck
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
+	textt = message.text
+	textt = textt.split()
+	if textt[0] == "Погода":
+		print("We are")
+		print(get_weather(textt[1]))
+		bot.reply_to(message, get_weather(textt[1]))
 	if message.text == "Георг лох":
 		bot.reply_to(message, "Пипец вам")
 		c = 1
@@ -122,7 +131,7 @@ def get_text_messages(message):
 		anek = parseanek()
 		bot.reply_to(message, anek)
 	if message.text == "Юра!":
-		bot.reply_to(message, "ждем-с")
+		bot.reply_to(message, "@Chipperio")
 	if message.text == "Абоба":
 		bot.reply_to(message, "Aboba)")
 	if message.text == "Настя!":
@@ -132,31 +141,17 @@ def get_text_messages(message):
 	if message.text == "Георг, а ты пойдешь?":
 		bot.reply_to(message, 'Да, конечно, го')
 	if message.text == "Тема!":
-		bot.reply_to(message, 'нет тега. Могу просто покричать: "АРТЕМ!!!!"')
+		bot.reply_to(message, '@where_my_wings')
 	if message.text == "Сеня!":
 		bot.reply_to(message, 'Могу просто покричать: "АРСЕНИЙ!!!!"')
-	if message.text == "Start show!":
-		bot.reply_to(message, "Пиздец нахуй блядь!")
-	if message.text == "@dimakovua, не матерись":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
-	if message.text == "@dimakovua, ah sh*t, here we go again":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
-	if message.text == "@dimakovua, не матюкайся":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
-	if message.text == "@dimakovua, досить матюкатися":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
-	if message.text == "@dimakovua, мне показалось, или ты быканул?":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
-	if message.text == "@dimakovua, мат - плохо":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
 	if message.text == "Дима!":
 		bot.reply_to(message, "@dimakovua")
-	if message.text == "@dimakovua, ah sh*t, here we go again":
-		bot.reply_to(message, "Не быкуй на хозяина, а то я тебе весь код пересоберу, сука!")
+	if message.text == "@dimakovua":
+		bot.reply_to(message, 'Он уже летит. Я верю <3')
 	if message.text == "Доброе утро":
 		day = parse()
 		anek = parseanek()
-		bot.reply_to(message, "Доброе утро, господа! Сегодня " + day + "! Желаю вам успешно провести ваши последние (что весьма вероятно) дни существования достойно))) Я не лох ")
+		bot.reply_to(message, "Доброе утро, господа! Сегодня " + day + "! Желаю вам успешно провести ваши последние (что весьма вероятно) дни существования достойно)))")
 		bot.reply_to(message, "Анекдот сегодняшнего дня: "+anek)
 	
     
