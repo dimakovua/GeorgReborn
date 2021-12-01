@@ -62,97 +62,80 @@ def get_text_messages(message):
 	textt = message.text
 	textt = textt.split()
 	if textt[0] == "Погода":
-		print("We are")
-		print(get_weather(textt[1]))
-		bot.reply_to(message, get_weather(textt[1]))
-	if message.text == "Георг лох":
-		bot.reply_to(message, "Пипец вам")
-		c = 1
-		while c < 10:
-			bot.reply_to(message, "Пипец вам")
-			bot.reply_to(message, "Я предупреждал!")
-			bot.reply_to(message, "Я же не тупой бот")
-			bot.reply_to(message, "Ща еще будем тэгать")
-			bot.reply_to(message, "@dimakovua")
-			bot.reply_to(message, "@agent_sever")
-			anek = parseanek()
-			bot.reply_to(message, anek)
-			c = c + 1
-			
-		
+		bot.send_message(message.chat.id, get_weather(textt[1]))					
 	if message.text == "Блять":
-		bot.reply_to(message, "Не матерись")
+		bot.send_message(message.chat.id, "Не матерись")
 	if message.text == "Степа":
-		bot.reply_to(message, "Он лох")
+		bot.send_message(message.chat.id, "Он лох")
 	if message.text == "блять":
-		bot.reply_to(message, "Не матерись")
+		bot.send_message(message.chat.id, "Не матерись")
 	if message.text == "пиздец":
-		bot.reply_to(message, "Не матерись")
+		bot.send_message(message.chat.id, "Не матерись")
 	if message.text == "Пиздец":
-		bot.reply_to(message, "Не матерись")
+		bot.send_message(message.chat.id, "Не матерись")
 	if message.text == "Сука":
-		bot.reply_to(message, "Не мат, но все равно неприятно :(")
+		bot.send_message(message.chat.id, "Не мат, но все равно неприятно :(")
 	if message.text == "Слава Україні!":
-		bot.reply_to(message, "Героям слава!")
+		bot.send_message(message.chat.id, "Героям слава!")
 	if message.text == "Слава Україні":
-		bot.reply_to(message, "Где эмоции???")
+		bot.send_message(message.chat.id, "Где эмоции???")
 	if message.text == "Слава нації!":
-		bot.reply_to(message, "Смерть ворогам!")
+		bot.send_message(message.chat.id, "Смерть ворогам!")
 	if message.text == "Слава нації":
-		bot.reply_to(message, "Где эмоции???")
+		bot.send_message(message.chat.id, "Где эмоции???")
 	if message.text == "Україна!":
-		bot.reply_to(message, "Понад усе!")
+		bot.send_message(message.chat.id, "Понад усе!")
 	if message.text == "Путін":
-		bot.reply_to(message, "Хуйло")
+		bot.send_message(message.chat.id, "Хуйло")
 	if message.text == "Путин":
-		bot.reply_to(message, "Хуйло")
+		bot.send_message(message.chat.id, "Хуйло")
 	if message.text == "Пидор":
-		bot.reply_to(message, "Ты")
+		bot.send_message(message.chat.id, "Ты")
 	if message.text == "Юра":
-		bot.reply_to(message, "Клоун")
+		bot.send_message(message.chat.id, "Клоун")
 	if message.text == "Настя":
-		bot.reply_to(message, "Жопа")
+		bot.send_message(message.chat.id, "Жопа")
 	if message.text == "Женя":
-		bot.reply_to(message, "Токс")
+		bot.send_message(message.chat.id, "Токс")
 	if message.text == "Артем":
-		bot.reply_to(message, "Сишник")
+		bot.send_message(message.chat.id, "Сишник")
 	if message.text == "Сеня":
-		bot.reply_to(message, "Бухххалтер")
+		bot.send_message(message.chat.id, "Бухххалтер")
 	if message.text == "Дима":
-		bot.reply_to(message, "Кокосик")
+		bot.send_message(message.chat.id, "Кокосик")
 	if message.text == "Спокойной ночи":
-		bot.reply_to(message, "Спокойной)")
+		bot.send_message(message.chat.id, "Спокойной)")
 	if message.text == "Привет":
-		bot.reply_to(message, "Привет, солнце!")
+		bot.send_message(message.chat.id, "Привет, солнце!")
 	if message.text == "Праздник":
 		day = parse()
-		bot.reply_to(message, "Сегодня " + day)
+		bot.send_message(message.chat.id, "Сегодня " + day)
 	if message.text == "Анекдот":
 		anek = parseanek()
-		bot.reply_to(message, anek)
+		bot.send_message(message.chat.id, anek)
 	if message.text == "Юра!":
-		bot.reply_to(message, "@Chipperio")
+		bot.send_message(message.chat.id, "@Chipperio")
 	if message.text == "Абоба":
-		bot.reply_to(message, "Aboba)")
+		bot.send_message(message.chat.id, "Aboba)")
 	if message.text == "Настя!":
-		bot.reply_to(message, "@agent_sever")
+		bot.send_message(message.chat.id, "@agent_sever")
 	if message.text == "Женя!":
-		bot.reply_to(message, 'Могу просто покричать: "ЖЕНЯЯ!!!!"')
+		bot.send_message(message.chat.id, 'Могу просто покричать: "ЖЕНЯЯ!!!!"')
 	if message.text == "Георг, а ты пойдешь?":
-		bot.reply_to(message, 'Да, конечно, го')
+		bot.send_message(message.chat.id, 'Да, конечно, го')
 	if message.text == "Тема!":
-		bot.reply_to(message, '@where_my_wings')
+		bot.send_message(message.chat.id, '@where_my_wings')
 	if message.text == "Сеня!":
-		bot.reply_to(message, 'Могу просто покричать: "АРСЕНИЙ!!!!"')
+		bot.send_message(message.chat.id, 'Могу просто покричать: "АРСЕНИЙ!!!!"')
 	if message.text == "Дима!":
-		bot.reply_to(message, "@dimakovua")
+		bot.send_message(message.chat.id, "@dimakovua")
 	if message.text == "@dimakovua":
-		bot.reply_to(message, 'Он уже летит. Я верю <3')
+		bot.send_message(message.chat.id, 'Он уже летит. Я верю <3')
 	if message.text == "Доброе утро":
 		day = parse()
 		anek = parseanek()
-		bot.reply_to(message, "Доброе утро, господа! Сегодня " + day + "! Желаю вам успешно провести ваши последние (что весьма вероятно) дни существования достойно)))")
-		bot.reply_to(message, "Анекдот сегодняшнего дня: "+anek)
+		bot.send_message(message.chat.id, "Доброе утро, господа! Сегодня " + day + "! Желаю вам успешно провести ваши последние (что весьма вероятно) дни существования достойно)))")
+		bot.send_message(message.chat.id, "Анекдот сегодняшнего дня: "+anek)
 	
     
 
