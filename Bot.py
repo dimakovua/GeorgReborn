@@ -14,7 +14,10 @@ def get_contentanek(html):
 	itemsanek = soupanek.find('div', class_='text').get_text()
 	return itemsanek
 
-
+def get_html(url, params=None):
+    r = requests.get(url, headers=headers1, params=params)
+    r.encoding = 'utf-8'
+    return r
 def parseanek():
 	htmlanek = get_htmlanek(urlanek)
 	if htmlanek.status_code == 200:
