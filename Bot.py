@@ -1,13 +1,31 @@
 import telebot
 import requests
+import os
 from bs4 import BeautifulSoup
+from pytube import YouTube
+from telebot.types import Audio
 
 
 def get_htmlanek(url, params=None):
 	ranek = requests.get(url, headers=headersanek, params=params)
 	ranek.encoding = 'utf-8'
 	return ranek
-
+def get_music(name):
+	yt = YouTube(name)
+	if(yt.length <600):
+		name_of_music = yt.title
+		music = yt.streams.filter(only_audio=True).first().download(filename=name_of_music+".mp3")
+		return name_of_music
+	else:
+		return "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("
+def get_video(name):
+	yt = YouTube(name)
+	if(yt.length < 300):
+		name_of_video = yt.title
+		video = yt.streams.filter(res="360p",).first().download(filename=name_of_video+".mp4")
+		return name_of_video
+	else:
+		return "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("
 
 def get_contentanek(html):
 	soupanek = BeautifulSoup(html, 'html.parser')
@@ -51,8 +69,6 @@ def parse():
         Print('Error')
 
 bot = telebot.TeleBot('1287225917:AAE2H4WbxZPaSlFb2G7doWx9r43kGzajxqo')
-
-
 urlanek = 'https://www.anekdot.ru/random/anekdot/'
 headersanek = {'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0', 'accept': '*/*'}
 url1 = 'http://kakoysegodnyaprazdnik.ru/'
@@ -65,9 +81,38 @@ def get_text_messages(message):
 	textt = message.text
 	textt = textt.split()
 	if textt[0] == "Погода":
-		bot.send_message(message.chat.id, get_weather(textt[1]))					
+		try:
+			bot.send_message(message.chat.id, get_weather(textt[1]))
+		except:
+			bot.send_message(message.chat.id, "Шось не те(")					
 	if message.text == "Блять":
 		bot.send_message(message.chat.id, "Не матерись")
+	if textt[0] == "Музыка":
+		try:
+			name = get_music(textt[1])
+			if(name != "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("):
+				name+=".mp3"
+				bot.send_message(message.chat.id, name)
+				audio = open(name, 'rb')
+				bot.send_audio(message.chat.id, audio)
+				os.remove(name)
+			else:
+				bot.send_message(message.chat.id, name)
+		except:
+			bot.send_message(message.chat.id, "Кинь силку на ютуб нормальную, а не це")
+	if textt[0] == "Видео":
+		try:
+			name = get_video(textt[1])
+			if(name != "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("):
+				name+=".mp4"
+				bot.send_message(message.chat.id, name)
+				video = open(name, 'rb')
+				bot.send_video(message.chat.id, video, supports_streaming=True)
+				os.remove(name)
+			else:
+				bot.send_message(message.chat.id, name)
+		except:
+			bot.send_message(message.chat.id, "Кинь силку на ютуб нормальную, а не це")
 	if message.text == "Степа":
 		bot.send_message(message.chat.id, "Он лох")
 	if message.text == "блять":
