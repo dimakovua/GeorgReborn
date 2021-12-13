@@ -6,6 +6,6 @@ services:
     build: .
     volumes:
       - .:/src
-    command: python Bot.py
+    command: python3 Bot.py
     restart: always
     network_mode: "host"
