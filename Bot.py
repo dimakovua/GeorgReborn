@@ -1,190 +1,157 @@
-import telebot
 import requests
-import os
-from bs4 import BeautifulSoup
+from aiogram import Bot, types
+from aiogram.dispatcher import Dispatcher
+from aiogram.utils import executor
 from pytube import YouTube
-from telebot.types import Audio
+import os
+from aiogram.types import ReplyKeyboardRemove, \
+    ReplyKeyboardMarkup, KeyboardButton, \
+    InlineKeyboardMarkup, InlineKeyboardButton, message
+from config import TOKEN
+
+loger_chat_id = "-792836774"
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
+
+weather_flag = 0
+video_flag = 0
+audio_flag = 0
+#Creating main keyboard
+button_video = KeyboardButton('Відео 📹')
+button_music = KeyboardButton('Музика 🎵')
+button_weather = KeyboardButton('Погода ☀️')
+main_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+main_kb.row(button_video, button_music)
+main_kb.add(button_weather)
+#Creating aboba keyboard to stop asking link
+button_aboba = KeyboardButton('абоба')
+aboba_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+aboba_kb.add(button_aboba)
+
+@dp.message_handler(commands=['start'])
+async def process_start_command(message: types.Message):
+    global loger_chat_id
+    await message.reply("Привіт) \nЯ Георг. Намагаюся бути корисним)))))))", reply_markup=main_kb)
+    await bot.send_message(loger_chat_id, "Мене хтось запустив!")
 
 
-def get_htmlanek(url, params=None):
-	ranek = requests.get(url, headers=headersanek, params=params)
-	ranek.encoding = 'utf-8'
-	return ranek
-def get_music(name):
-	yt = YouTube(name)
-	if(yt.length <600):
-		name_of_music = yt.title
-		music = yt.streams.filter(only_audio=True).first().download(filename=name_of_music+".mp3")
-		return name_of_music
-	else:
-		return "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("
-def get_video(name):
-	yt = YouTube(name)
-	if(yt.length < 300):
-		name_of_video = yt.title
-		video = yt.streams.filter(res="360p",).first().download(filename=name_of_video+".mp4")
-		return name_of_video
-	else:
-		return "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("
+@dp.message_handler(commands=['help'])
+async def process_help_command(message: types.Message):
+    await message.reply(text = "☀️Я дізнаюсь для тебе погоду в будь-якому місті за допомогою /weather \n📹 Я можу скачати для тебе коротесенький мєм з Ютубчика. Спробуй /video\n🎵 Я відправлю тобі музику с відео на Ютуб! Трішки піратство, але спробуй /music")
 
-def get_contentanek(html):
-	soupanek = BeautifulSoup(html, 'html.parser')
-	itemsanek = soupanek.find('div', class_='text').get_text()
-	return itemsanek
-
-def get_html(url, params=None):
-    r = requests.get(url, headers=headers1, params=params)
-    r.encoding = 'utf-8'
-    return r
-def parseanek():
-	htmlanek = get_htmlanek(urlanek)
-	if htmlanek.status_code == 200:
-		return get_contentanek(htmlanek.text)
-
-	else:
-		Print('Error')
-
-
-def get_weather(city):
-	req = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=8915429fcf6a68275f7c20caab444827&units=metric&lang=RU"
-	res = requests.get(req)
-	data = res.json()
-	try:
-		answer = "В городе " + data['name'] + " сейчас " + str(data['main']['temp']) + " °С и " + data['weather'][0]['description']
-	except:
-		return "Дідько! Такого міста не існує, здається("
-	return answer
-def get_content(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    items = soup.find('span').get_text()
-    return items
-
-
-def parse():
-    html = get_html(url1)
-    if html.status_code == 200:
-        return get_content(html.text)
-        
+@dp.message_handler(lambda message: message.text == 'Погода ☀️')
+@dp.message_handler(commands=['weather'])
+async def weather(message: types.Message):
+    global loger_chat_id
+    global weather_flag
+    arguments = ""
+    if(weather_flag):
+        arguments = message.text
     else:
-        Print('Error')
+        arguments = message.get_args()
+    try:
+        req = "http://api.openweathermap.org/data/2.5/weather?q=" + arguments + "&appid=8915429fcf6a68275f7c20caab444827&units=metric&lang=UA"
+        res = requests.get(req)
+        data = res.json()
+        answer = "У місті " + arguments + " зараз " + str(data['main']['temp']) + " °С та " + data['weather'][0]['description']
+        weather_flag = 0
+        await bot.send_message(message.chat.id, text=answer)
+        await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
+        await bot.send_message(loger_chat_id, "Хтось дізнався погоду в " + arguments + "!")
+    except:
+        weather_flag
+        weather_flag = 1
+        await bot.send_message(message.chat.id, text="Напиши назву міста (або натисни абоба)", reply_markup=aboba_kb)
 
-bot = telebot.TeleBot('1287225917:AAE2H4WbxZPaSlFb2G7doWx9r43kGzajxqo')
-urlanek = 'https://www.anekdot.ru/random/anekdot/'
-headersanek = {'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0', 'accept': '*/*'}
-url1 = 'http://kakoysegodnyaprazdnik.ru/'
-headers1 = {'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0',
-            'accept': '*/*'}
+@dp.message_handler(lambda message: message.text == 'Відео 📹')
+@dp.message_handler(commands=['video'])
+async def video(message: types.Message):
+    global loger_chat_id
+    global video_flag
+    print(video_flag)
+    arguments = ""
+    if(video_flag):
+        arguments = message.text
+        print(arguments)
+    else:
+        arguments = message.get_args()
+    try:
+        yt = YouTube(arguments)
+    except:
+        video_flag = 1
+        await bot.send_message(message.chat.id, text="Кинь силку на Ютуб (або натисни абоба)", reply_markup=aboba_kb)
+        return
+    if(yt.length < 300):
+        await bot.send_message(message.chat.id, text="Секундочку..")
+        name_of_video = yt.title
+        video = yt.streams.filter(res="360p",).first().download(filename=name_of_video+".mp4")
+        video_to_send = open(name_of_video+".mp4", 'rb')
+        await bot.send_video(message.chat.id, video=video_to_send, supports_streaming=True)
+        await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
+        os.remove(name_of_video+".mp4")
+        await bot.send_message(loger_chat_id, text="Хтось скачав відео\n" + arguments)
+        video_flag = 0
+    else:
+        video_flag = 0
+        await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((")
+@dp.message_handler(lambda message: message.text == 'Музика 🎵')
+@dp.message_handler(commands=['music'])
+async def audio(message: types.Message):
+    global loger_chat_id
+    global audio_flag
+    print(audio_flag)
+    arguments = ""
+    if(audio_flag):
+        arguments = message.text
+        print(arguments)
+    else:
+        arguments = message.get_args()
+    try:
+        yt = YouTube(arguments)
+    except:
+        audio_flag = 1
+        await bot.send_message(message.chat.id, text="Кинь силку на Ютуб (або натисни абоба)", reply_markup=aboba_kb)
+        return
+    if(yt.length < 300):
+        await bot.send_message(message.chat.id, text="Секундочку..")
+        name_of_audio = yt.title
+        music = yt.streams.filter(only_audio=True).first().download(filename=name_of_audio+".mp3")
+        audio_to_send = open(name_of_audio+".mp3", 'rb')
+        await bot.send_audio(message.chat.id, audio=audio_to_send)
+        await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
+        # await bot.send_video(message.from_user.id, video=video_to_send, supports_streaming=True)
+        os.remove(name_of_audio+".mp3")
+        await bot.send_message(loger_chat_id, text="Хтось скачав музику\n" + arguments)
+        audio_flag = 0
+    else:
+        audio_flag = 0
+        await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((", reply_markup=main_kb)
+
+@dp.message_handler()
+async def echo_message(msg: types.Message):
+    global weather_flag
+    global video_flag
+    global audio_flag
+    print(msg.chat.id)
+    if(weather_flag or video_flag or audio_flag):
+        if(weather_flag and msg.text != "абоба" and msg.text != "/help" and msg.text != "/weather" and msg.text != "/video" and msg.text != "/start" and msg.text != "/music"):
+            await weather(message=msg)
+            return
+        if(video_flag and msg.text != "абоба" and msg.text != "/help" and msg.text != "/weather" and msg.text != "/video" and msg.text != "/start" and msg.text != "/music"):
+            print(")))")
+            await video(message=msg)
+            return
+        if(audio_flag and msg.text != "абоба" and msg.text != "/help" and msg.text != "/weather" and msg.text != "/video" and msg.text != "/start" and msg.text != "/music"):
+            await audio(message=msg)
+            return
+        else:
+            await bot.send_message(msg.chat.id, text="Добре)\nВідстану від тебе")
+            await bot.send_message(msg.chat.id, text="Щось ще?)", reply_markup=main_kb)
+            weather_flag = 0
+            video_flag = 0
+            audio_flag = 0
+            return
 
 
-@bot.message_handler(content_types=['text'])
-def get_text_messages(message):
-	textt = message.text
-	textt = textt.split()
-	if textt[0] == "Погода":
-		try:
-			bot.send_message(message.chat.id, get_weather(textt[1]))
-		except:
-			bot.send_message(message.chat.id, "Шось не те(")					
-	if message.text == "Блять":
-		bot.send_message(message.chat.id, "Не матерись")
-	if textt[0] == "Музыка":
-		try:
-			name = get_music(textt[1])
-			if(name != "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("):
-				name+=".mp3"
-				bot.send_message(message.chat.id, name)
-				audio = open(name, 'rb')
-				bot.send_audio(message.chat.id, audio)
-				os.remove(name)
-			else:
-				bot.send_message(message.chat.id, name)
-		except:
-			bot.send_message(message.chat.id, "Кинь силку на ютуб нормальную, а не це")
-	if textt[0] == "Видео":
-		try:
-			name = get_video(textt[1])
-			if(name != "У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?((((("):
-				name+=".mp4"
-				bot.send_message(message.chat.id, name)
-				video = open(name, 'rb')
-				bot.send_video(message.chat.id, video, supports_streaming=True)
-				os.remove(name)
-			else:
-				bot.send_message(message.chat.id, name)
-		except:
-			bot.send_message(message.chat.id, "Кинь силку на ютуб нормальную, а не це")
-	if message.text == "Степа":
-		bot.send_message(message.chat.id, "Он лох")
-	if message.text == "блять":
-		bot.send_message(message.chat.id, "Не матерись")
-	if message.text == "пиздец":
-		bot.send_message(message.chat.id, "Не матерись")
-	if message.text == "Пиздец":
-		bot.send_message(message.chat.id, "Не матерись")
-	if message.text == "Сука":
-		bot.send_message(message.chat.id, "Не мат, но все равно неприятно :(")
-	if message.text == "Слава Україні!":
-		bot.send_message(message.chat.id, "Героям слава!")
-	if message.text == "Слава Україні":
-		bot.send_message(message.chat.id, "Где эмоции???")
-	if message.text == "Слава нації!":
-		bot.send_message(message.chat.id, "Смерть ворогам!")
-	if message.text == "Слава нації":
-		bot.send_message(message.chat.id, "Где эмоции???")
-	if message.text == "Україна!":
-		bot.send_message(message.chat.id, "Понад усе!")
-	if message.text == "Путін":
-		bot.send_message(message.chat.id, "Хуйло")
-	if message.text == "Путин":
-		bot.send_message(message.chat.id, "Хуйло")
-	if message.text == "Пидор":
-		bot.send_message(message.chat.id, "Ты")
-	if message.text == "Юра":
-		bot.send_message(message.chat.id, "Клоун")
-	if message.text == "Настя":
-		bot.send_message(message.chat.id, "Жопа")
-	if message.text == "Женя":
-		bot.send_message(message.chat.id, "Токс")
-	if message.text == "Артем":
-		bot.send_message(message.chat.id, "Сишник")
-	if message.text == "Сеня":
-		bot.send_message(message.chat.id, "Бухххалтер")
-	if message.text == "Дима":
-		bot.send_message(message.chat.id, "Кокосик")
-	if message.text == "Спокойной ночи":
-		bot.send_message(message.chat.id, "Спокойной)")
-	if message.text == "Привет":
-		bot.send_message(message.chat.id, "Привет, солнце!")
-	if message.text == "Праздник":
-		day = parse()
-		bot.send_message(message.chat.id, "Сегодня " + day)
-	if message.text == "Анекдот":
-		anek = parseanek()
-		bot.send_message(message.chat.id, anek)
-	if message.text == "Юра!":
-		bot.send_message(message.chat.id, "@Chipperio")
-	if message.text == "Абоба":
-		bot.send_message(message.chat.id, "Aboba)")
-	if message.text == "Настя!":
-		bot.send_message(message.chat.id, "@agent_sever")
-	if message.text == "Женя!":
-		bot.send_message(message.chat.id, 'Могу просто покричать: "ЖЕНЯЯ!!!!"')
-	if message.text == "Георг, а ты пойдешь?":
-		bot.send_message(message.chat.id, 'Да, конечно, го')
-	if message.text == "Тема!":
-		bot.send_message(message.chat.id, '@where_my_wings')
-	if message.text == "Сеня!":
-		bot.send_message(message.chat.id, 'Могу просто покричать: "АРСЕНИЙ!!!!"')
-	if message.text == "Дима!":
-		bot.send_message(message.chat.id, "@dimakovua")
-	if message.text == "@dimakovua":
-		bot.send_message(message.chat.id, 'Он уже летит. Я верю <3')
-	if message.text == "Доброе утро":
-		day = parse()
-		anek = parseanek()
-		bot.send_message(message.chat.id, "Доброе утро, господа! Сегодня " + day + "! Желаю вам успешно провести ваши последние (что весьма вероятно) дни существования достойно)))")
-		bot.send_message(message.chat.id, "Анекдот сегодняшнего дня: "+anek)
-	
-    
-
-bot.polling(none_stop=True, interval=0)
+if __name__ == '__main__':
+    executor.start_polling(dp)
