@@ -1,3 +1,4 @@
+from imghdr import what
 import requests
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
@@ -12,6 +13,7 @@ from config import TOKEN
 loger_chat_id = "-792836774"
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
+users_flags = {12: 12}
 
 weather_flag = 0
 video_flag = 0
@@ -44,23 +46,27 @@ async def process_help_command(message: types.Message):
 async def weather(message: types.Message):
     global loger_chat_id
     global weather_flag
+    global users_flags
     arguments = ""
-    if(weather_flag):
+    if(users_flags.get(message.from_user.id) == 1):
         arguments = message.text
     else:
         arguments = message.get_args()
     try:
+        print(arguments)
         req = "http://api.openweathermap.org/data/2.5/weather?q=" + arguments + "&appid=8915429fcf6a68275f7c20caab444827&units=metric&lang=UA"
         res = requests.get(req)
         data = res.json()
         answer = "У місті " + arguments + " зараз " + str(data['main']['temp']) + " °С та " + data['weather'][0]['description']
         weather_flag = 0
+        users_flags.pop(message.from_user.id)
         await bot.send_message(message.chat.id, text=answer)
         await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
         await bot.send_message(loger_chat_id, "Хтось дізнався погоду в " + arguments + "!")
     except:
         weather_flag
         weather_flag = 1
+        users_flags[message.from_user.id] = 1
         await bot.send_message(message.chat.id, text="Напиши назву міста (або натисни абоба)", reply_markup=aboba_kb)
 
 @dp.message_handler(lambda message: message.text == 'Відео 📹')
@@ -68,9 +74,10 @@ async def weather(message: types.Message):
 async def video(message: types.Message):
     global loger_chat_id
     global video_flag
+    global users_flags
     print(video_flag)
     arguments = ""
-    if(video_flag):
+    if(users_flags.get(message.from_user.id) == 2):
         arguments = message.text
         print(arguments)
     else:
@@ -78,30 +85,36 @@ async def video(message: types.Message):
     try:
         yt = YouTube(arguments)
     except:
-        video_flag = 1
+        users_flags[message.from_user.id] = 2
         await bot.send_message(message.chat.id, text="Кинь силку на Ютуб (або натисни абоба)", reply_markup=aboba_kb)
         return
     if(yt.length < 300):
+        print(users_flags)
         await bot.send_message(message.chat.id, text="Секундочку..")
         name_of_video = yt.title
+        print(name_of_video)
         video = yt.streams.filter(res="360p",).first().download(filename=name_of_video+".mp4")
+        print("OK")
         video_to_send = open(name_of_video+".mp4", 'rb')
         await bot.send_video(message.chat.id, video=video_to_send, supports_streaming=True)
         await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
         os.remove(name_of_video+".mp4")
         await bot.send_message(loger_chat_id, text="Хтось скачав відео\n" + arguments)
         video_flag = 0
+        users_flags.pop(message.from_user.id)
     else:
         video_flag = 0
+        users_flags.pop(message.from_user.id)
         await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((")
 @dp.message_handler(lambda message: message.text == 'Музика 🎵')
 @dp.message_handler(commands=['music'])
 async def audio(message: types.Message):
     global loger_chat_id
     global audio_flag
+    global users_flags
     print(audio_flag)
     arguments = ""
-    if(audio_flag):
+    if(users_flags.get(message.from_user.id) == 3):
         arguments = message.text
         print(arguments)
     else:
@@ -109,7 +122,7 @@ async def audio(message: types.Message):
     try:
         yt = YouTube(arguments)
     except:
-        audio_flag = 1
+        users_flags[message.from_user.id] = 3
         await bot.send_message(message.chat.id, text="Кинь силку на Ютуб (або натисни абоба)", reply_markup=aboba_kb)
         return
     if(yt.length < 300):
@@ -122,9 +135,9 @@ async def audio(message: types.Message):
         # await bot.send_video(message.from_user.id, video=video_to_send, supports_streaming=True)
         os.remove(name_of_audio+".mp3")
         await bot.send_message(loger_chat_id, text="Хтось скачав музику\n" + arguments)
-        audio_flag = 0
+        users_flags.pop(message.from_user.id)
     else:
-        audio_flag = 0
+        users_flags.pop(message.from_user.id)
         await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((", reply_markup=main_kb)
 
 @dp.message_handler()
@@ -132,26 +145,29 @@ async def echo_message(msg: types.Message):
     global weather_flag
     global video_flag
     global audio_flag
-    print(msg.chat.id)
-    if(weather_flag or video_flag or audio_flag):
-        if(weather_flag and msg.text != "абоба" and msg.text != "/help" and msg.text != "/weather" and msg.text != "/video" and msg.text != "/start" and msg.text != "/music"):
-            await weather(message=msg)
-            return
-        if(video_flag and msg.text != "абоба" and msg.text != "/help" and msg.text != "/weather" and msg.text != "/video" and msg.text != "/start" and msg.text != "/music"):
-            print(")))")
-            await video(message=msg)
-            return
-        if(audio_flag and msg.text != "абоба" and msg.text != "/help" and msg.text != "/weather" and msg.text != "/video" and msg.text != "/start" and msg.text != "/music"):
-            await audio(message=msg)
-            return
-        else:
-            await bot.send_message(msg.chat.id, text="Добре)\nВідстану від тебе")
-            await bot.send_message(msg.chat.id, text="Щось ще?)", reply_markup=main_kb)
-            weather_flag = 0
-            video_flag = 0
-            audio_flag = 0
-            return
+    global users_flags
+    print(users_flags)
+    if(users_flags.get(msg.from_user.id)):
+        if(True):
+            if(users_flags.get(msg.from_user.id) == 1 and msg.text != "абоба"):
+                await weather(message=msg)
+                return
+            if(users_flags.get(msg.from_user.id) == 2 and msg.text != "абоба"):
+                print(")))")
+                await video(message=msg)
+                return
+            if(users_flags.get(msg.from_user.id) == 3 and msg.text != "абоба"):
+                await audio(message=msg)
+                return
+            else:
+                await bot.send_message(msg.chat.id, text="Добре)\nВідстану від тебе")
+                await bot.send_message(msg.chat.id, text="Щось ще?)", reply_markup=main_kb)
+                users_flags.pop(msg.from_user.id)
+                return
 
 
 if __name__ == '__main__':
+    print(users_flags)
+    bot.send_message(loger_chat_id, text="Я стартанув!")
+
     executor.start_polling(dp)
