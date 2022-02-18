@@ -1,6 +1,4 @@
-from imghdr import what
-from re import I
-import easyocr
+
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
@@ -30,15 +28,6 @@ main_kb.add(button_weather)
 button_aboba = KeyboardButton('абоба')
 aboba_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 aboba_kb.add(button_aboba)
-
-def text_recognition(file_path):
-    reader = easyocr.Reader(["ru", "en"])
-    result = reader.readtext(file_path, detail=0, paragraph=True)
-    result_aboba = ""
-    for i in result:
-        result_aboba+= i
-        result_aboba+="\n\n"
-    return result_aboba
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
@@ -159,14 +148,6 @@ async def audio(message: types.Message):
     else:
         users_flags.pop(message.from_user.id)
         await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((", reply_markup=main_kb)
-
-@dp.message_handler(content_types=['photo'])
-async def picture(message):
-    path = str(message.from_user.id) + ".jpg"
-    await bot.send_message(message.chat.id, text="Секундочку)")
-    await message.photo[-1].download(str(message.from_user.id) + ".jpg")
-    await bot.send_message(message.chat.id, text=text_recognition(path))
-    os.remove(path)
 
 @dp.message_handler()
 async def echo_message(msg: types.Message):
