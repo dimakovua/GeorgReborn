@@ -1,5 +1,6 @@
 from imghdr import what
-import requests
+from re import I
+import easyocr
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
@@ -29,6 +30,15 @@ main_kb.add(button_weather)
 button_aboba = KeyboardButton('абоба')
 aboba_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 aboba_kb.add(button_aboba)
+
+def text_recognition(file_path):
+    reader = easyocr.Reader(["ru", "en"])
+    result = reader.readtext(file_path, detail=0, paragraph=True)
+    result_aboba = ""
+    for i in result:
+        result_aboba+= i
+        result_aboba+="\n\n"
+    return result_aboba
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
@@ -89,23 +99,29 @@ async def video(message: types.Message):
         await bot.send_message(message.chat.id, text="Кинь силку на Ютуб (або натисни абоба)", reply_markup=aboba_kb)
         return
     if(yt.length < 300):
-        print(users_flags)
-        await bot.send_message(message.chat.id, text="Секундочку..")
-        name_of_video = yt.title
-        print(name_of_video)
-        video = yt.streams.filter(res="360p",).first().download(filename=name_of_video+".mp4")
-        print("OK")
-        video_to_send = open(name_of_video+".mp4", 'rb')
-        await bot.send_video(message.chat.id, video=video_to_send, supports_streaming=True)
-        await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
-        os.remove(name_of_video+".mp4")
-        await bot.send_message(loger_chat_id, text="Хтось скачав відео\n" + arguments)
-        video_flag = 0
-        users_flags.pop(message.from_user.id)
+        try:
+            print(users_flags)
+            await bot.send_message(message.chat.id, text="Секундочку..")
+            name_of_video = yt.title
+            print(name_of_video)
+            video = yt.streams.filter(res="360p",).first().download(filename=name_of_video+".mp4")
+            print("OK")
+            video_to_send = open(name_of_video+".mp4", 'rb')
+            await bot.send_video(message.chat.id, video=video_to_send, supports_streaming=True)
+            await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
+            os.remove(name_of_video+".mp4")
+            await bot.send_message(loger_chat_id, text="Хтось скачав відео\n" + arguments)
+            video_flag = 0
+            users_flags.pop(message.from_user.id)
+        except:
+            video_flag = 0
+            users_flags.pop(message.from_user.id)
+            await bot.send_message(message.chat.id, text="Напишіть Діме, шо я знову зламався((((")
     else:
         video_flag = 0
         users_flags.pop(message.from_user.id)
         await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((")
+
 @dp.message_handler(lambda message: message.text == 'Музика 🎵')
 @dp.message_handler(commands=['music'])
 async def audio(message: types.Message):
@@ -126,19 +142,31 @@ async def audio(message: types.Message):
         await bot.send_message(message.chat.id, text="Кинь силку на Ютуб (або натисни абоба)", reply_markup=aboba_kb)
         return
     if(yt.length < 300):
-        await bot.send_message(message.chat.id, text="Секундочку..")
-        name_of_audio = yt.title
-        music = yt.streams.filter(only_audio=True).first().download(filename=name_of_audio+".mp3")
-        audio_to_send = open(name_of_audio+".mp3", 'rb')
-        await bot.send_audio(message.chat.id, audio=audio_to_send)
-        await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
-        # await bot.send_video(message.from_user.id, video=video_to_send, supports_streaming=True)
-        os.remove(name_of_audio+".mp3")
-        await bot.send_message(loger_chat_id, text="Хтось скачав музику\n" + arguments)
-        users_flags.pop(message.from_user.id)
+        try:
+            await bot.send_message(message.chat.id, text="Секундочку..")
+            name_of_audio = yt.title
+            music = yt.streams.filter(only_audio=True).first().download(filename=name_of_audio+".mp3")
+            audio_to_send = open(name_of_audio+".mp3", 'rb')
+            await bot.send_audio(message.chat.id, audio=audio_to_send)
+            await bot.send_message(message.chat.id, text="Щось ще?)", reply_markup=main_kb)
+            # await bot.send_video(message.from_user.id, video=video_to_send, supports_streaming=True)
+            os.remove(name_of_audio+".mp3")
+            await bot.send_message(loger_chat_id, text="Хтось скачав музику\n" + arguments)
+            users_flags.pop(message.from_user.id)
+        except:
+            users_flags.pop(message.from_user.id)
+            await bot.send_message(message.chat.id, text="Напишіть Діме, шо я знову зламався((((")
     else:
         users_flags.pop(message.from_user.id)
         await bot.send_message(message.chat.id, text="У мене сервера на 600 мб. Мб тобі ще Інтерстеллар скачати?(((((", reply_markup=main_kb)
+
+@dp.message_handler(content_types=['photo'])
+async def picture(message):
+    path = str(message.from_user.id) + ".jpg"
+    await bot.send_message(message.chat.id, text="Секундочку)")
+    await message.photo[-1].download(str(message.from_user.id) + ".jpg")
+    await bot.send_message(message.chat.id, text=text_recognition(path))
+    os.remove(path)
 
 @dp.message_handler()
 async def echo_message(msg: types.Message):
@@ -168,6 +196,5 @@ async def echo_message(msg: types.Message):
 
 if __name__ == '__main__':
     print(users_flags)
-    bot.send_message(loger_chat_id, text="Я стартанув!")
 
     executor.start_polling(dp)
